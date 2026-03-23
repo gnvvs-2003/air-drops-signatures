@@ -63,3 +63,48 @@ remappings = [
 ]
 ```
 
+# Structure of Merkle Tree
+Merkle tree is a hierarchical data structure built from hashed data.
+
+* Merkle Trees
+![alt text](<Merkle Trees.png>)
+
+The primary issue with the Naive approach is that it requires storing all the data on-chain, which can be expensive and inefficient. 
+
+Merkle Trees can solve this problem by storing only the root hash of the tree on chain
+
+When a user claims, they provide their address (the leaf data) and the corresponding Merkle proof. The contract then performs a fixed number of hashing operations to verify the proof. 
+
+The number of operations is proportional to the depth of the tree (log N, where N is the number of leaves), which is significantly more scalable and gas-efficient than iterating through N elements.
+
+# Key functionalities in `MerkleProof.sol` 
+1. `verify`
+
+```solidity
+function verify(bytes32[] memory proof /** Merkle Proof*/,bytes32 root,bytes32 leaf) internal pure returns(bool){
+    return processProof(proof,leaf) == root;
+}
+```
+The merkle proof contains the array of sibling hashes
+
+2. `processProof`
+
+```solidity
+function processProof(bytes32[] memory proof,bytes32 leaf) internal pure returns(bytes32 computedHash){
+    bytes32 computedHash = leaf;
+    for(uint i = 0;i<=proof.length;i++){
+        computedHash = _hashPair(comptedHash,proof[i]);
+    }
+    return computedHash;
+}
+```
+
+3. `_hashPair`
+
+```solidity
+function _hashPair(bytes32 a,bytes32 b) internal pure returns(bytes32){
+    return a<b?keccak256(abi.encode(a,b)):keccak256(abi.encode(b,a));
+}
+```
+> Openzeppelin's actual implementation i.e `_efficientHash` uses assembly for optimized `keccak256` hashing
+

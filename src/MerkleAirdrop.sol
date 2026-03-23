@@ -27,6 +27,9 @@ contract MerkleAirdrop {
     bytes32 private immutable I_MERKLE_ROOT;
     IERC20 private immutable I_AIRDROP_TOKEN;
 
+    // Mappings
+    mapping(address claimant => bool) private sHasClaimed;
+
     /// Constructor
     /// @notice sets the merkle root and the airdrop token address
     /// @param merkleRoot : The root hash of the Merkle tree
@@ -49,19 +52,30 @@ contract MerkleAirdrop {
      * @notice The function first verifies the Merkle proof to ensure the account is eligible
      * @notice If the proof is valid, the function transfers the specified amount of tokens to the account
      * @notice The function uses the `verify` function from the `MerkleProof` library to verify the proof
+     * @notice CHECK : CHECK IF THE ACCOUNT ALREADY CLAIMED IF NOT CHECK IF THE MERKLE PROOF IS VALID
+     * @notice CHECK : CHECK IF THE ACCOUNT IS ELIGIBLE FOR THE AIRDROP
+     * @notice EFFECT : UPDATE THE STATUS OF CLAIMING AND
+     * @notice INTERACTIONS : EMIT EVENT AND TRANSFER TOKENS
      */
     function claim(address account, uint256 amount, bytes32[] calldata merkleProof) external {
-        // Step-1 : reconstructs the leaf node hash corresponding to claimant's address USING DOUBLE HASHING
+        // Step-1 : Preventing double claims
+        if (sHasClaimed[account]) {
+            revert MerkleAirdrop__AlreadyClaimed();
+        }
+        // Step-2 : reconstructs the leaf node hash corresponding to claimant's address USING DOUBLE HASHING
         bytes32 leafHash = keccak256(bytes.concat(keccak256(abi.encode(account, amount))));
-        // Step-2 : Verifying the Merkle proof
+        // Step-3 : Verifying the Merkle proof
         if (!MerkleProof.verify(merkleProof, I_MERKLE_ROOT, leafHash)) {
             revert MerkleAirdrop__InvalidMerkleProof();
         }
-        // Step-3 : Logging claims
+
+        sHasClaimed[account] = true;
+        // Step-4 : Logging claims
         emit Claim(account, amount);
         I_AIRDROP_TOKEN.safeTransfer(account, amount);
     }
 
     /// Errors
     error MerkleAirdrop__InvalidMerkleProof();
+    error MerkleAirdrop__AlreadyClaimed();
 }

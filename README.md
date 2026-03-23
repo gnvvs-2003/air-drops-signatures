@@ -108,3 +108,62 @@ function _hashPair(bytes32 a,bytes32 b) internal pure returns(bytes32){
 ```
 > Openzeppelin's actual implementation i.e `_efficientHash` uses assembly for optimized `keccak256` hashing
 
+For generating the Merkle Trees and proofs within our foundry project we will use `murky` library available at 
+```
+https://github.com/dmfxyz/murky
+```
+This library provides tools for constructing Merkle trees and generating proofs directly within Foundry scripts.
+
+# DS for Merkle Tree Generation
+We will use 2 `json` files to manage the Merkle tree data these files are stored in `script/target` folder
+
+1. `input.json` : Contains the raw data genertad by `script/GenerateInput.s.sol`
+2. `output.json` : Generated Merkle Tree information genertad by `script/MakeMerkle.s.sol`
+
+Example of `input.json`
+
+```json
+{
+  "types": [
+    "address", // for account address
+    "uint" // for amount
+  ],
+  "count": 4, // number of leaf nodes
+  "values": { // leaf node data
+    "0": { // leaf node -0
+      "0": "0x6CA6d1e2D5347Bfab1d91e883F1915560e891290", // addr
+      "1": "2500000000000000000" // amt
+    },
+    "1": { // leaf node -1
+      "0": "0xAnotherAddress...", // addr
+      "1": "1000000000000000000" // amt
+    }
+    // ... other values up to count-1
+  }
+}
+```
+
+Example of `output.json`
+
+```json
+{
+  "inputs": [
+    "0x6CA6d1e2D5347Bfab1d91e883F1915560e891290", // addr
+    "2500000000000000000" // amt
+  ],
+  "proof": [ // hashes to make the Merkle root i.e sibling hashes
+    "0xfd7c981d30bece61f7499702bf5903114a0e06b51ba2c53abdf7b62986c00aef", // sibling hash
+    "0x46f4c7c1c21e8a0c03949be8a51d2d02d1ec75b55d97a9993c3dbaf3a5a1e2f4" // sibling hash
+  ],
+  "root": "0x474d994c59e37b12805fd7bcbbcd046cf1907b90de3b7fb083cf3636c0ebfb1a", // merkle root hash
+  "leaf": "0xd1445c931158119d00449ffcac3c947d828c359c34a6646b995962b35b5c6adc" // leaf node hash
+}
+// This structure is repeated for each leaf in the airdrop.
+```
+
+Installing the `murky` library
+
+```bash
+forge install dmfxyz/murky
+```
+

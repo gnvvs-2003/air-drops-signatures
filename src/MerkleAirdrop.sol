@@ -75,6 +75,19 @@ contract MerkleAirdrop {
         I_AIRDROP_TOKEN.safeTransfer(account, amount);
     }
 
+    /// Getter functions
+    function getMerkleRoot() external view returns (bytes32) {
+        return I_MERKLE_ROOT;
+    }
+
+    function getAirdropToken() external view returns (IERC20) {
+        return I_AIRDROP_TOKEN;
+    }
+
+    function getHasClaimed(address account) external view returns (bool) {
+        return sHasClaimed[account];
+    }
+
     /// Errors
     error MerkleAirdrop__InvalidMerkleProof();
     error MerkleAirdrop__AlreadyClaimed();

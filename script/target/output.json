@@ -1,0 +1,50 @@
+[
+    {
+        "inputs": [
+            "0x6CA6D1e2D5347bfaB1d91E883F1915560E891290",
+            "2500000000000000000000"
+        ],
+        "proof": [
+            "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186",
+            "0x052afdafcae03e3f5159a1829fa29b62e410e065e037272a2dff1ee61ab07efa"
+        ],
+        "root": "0x9d2d634096a30dfe560703d7af45b8a73c8a15b5b9f9d594935f8238f245ccb9",
+        "leaf": "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186"
+    },
+    {
+        "inputs": [
+            "0x6CA6D1e2D5347bfaB1d91E883F1915560E891290",
+            "2500000000000000000000"
+        ],
+        "proof": [
+            "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186",
+            "0x052afdafcae03e3f5159a1829fa29b62e410e065e037272a2dff1ee61ab07efa"
+        ],
+        "root": "0x9d2d634096a30dfe560703d7af45b8a73c8a15b5b9f9d594935f8238f245ccb9",
+        "leaf": "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186"
+    },
+    {
+        "inputs": [
+            "0x6CA6D1e2D5347bfaB1d91E883F1915560E891290",
+            "2500000000000000000000"
+        ],
+        "proof": [
+            "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186",
+            "0x052afdafcae03e3f5159a1829fa29b62e410e065e037272a2dff1ee61ab07efa"
+        ],
+        "root": "0x9d2d634096a30dfe560703d7af45b8a73c8a15b5b9f9d594935f8238f245ccb9",
+        "leaf": "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186"
+    },
+    {
+        "inputs": [
+            "0x6CA6D1e2D5347bfaB1d91E883F1915560E891290",
+            "2500000000000000000000"
+        ],
+        "proof": [
+            "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186",
+            "0x052afdafcae03e3f5159a1829fa29b62e410e065e037272a2dff1ee61ab07efa"
+        ],
+        "root": "0x9d2d634096a30dfe560703d7af45b8a73c8a15b5b9f9d594935f8238f245ccb9",
+        "leaf": "0xccef3297bec466e37fbbb47138101669192eaad9f7d87355f7f2a7c9c03e7186"
+    }
+]

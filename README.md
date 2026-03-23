@@ -167,3 +167,23 @@ Installing the `murky` library
 forge install dmfxyz/murky
 ```
 
+Output json file generation flow:
+1. GenerateInput.s.sol Execution: This script creates script/target/input.json, which lists all airdrop recipients (addresses) and their corresponding token amounts.
+
+2. MakeMerkle.s.sol Reads Input: This script ingests the input.json file.
+
+3. Leaf Hash Calculation: For each address/amount pair from input.json:
+
+4. The address and amount are ABI-encoded (after necessary type conversions to bytes32).
+
+5. The ABI-encoded data is trimmed (e.g., using ltrim64) to remove encoding overhead.
+
+6. This trimmed data is then double-hashed (keccak256(bytes.concat(keccak256(trimmed_data)))) to produce the final bytes32 leaf hash.
+
+7. Merkle Tree Construction with murky: MakeMerkle.s.sol uses the murky library, providing it with all the generated leaf hashes. murky then:
+
+8. Calculates the single Merkle root for the entire dataset.
+
+9. Generates the unique Merkle proof for each individual leaf.
+
+10. output.json Generation: All the generated data—original inputs, the proof for each leaf, the common Merkle root, and each leaf's hash—is written to script/target/output.json.

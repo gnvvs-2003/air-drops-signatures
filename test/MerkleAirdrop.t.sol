@@ -4,6 +4,9 @@ pragma solidity ^0.8.24;
 import {Test, console} from "forge-std/Test.sol";
 import {MerkleAirdrop} from "../src/MerkleAirdrop.sol";
 import {BagelToken} from "../src/BagelToken.sol";
+import {DeployMerkleAirdrop} from "../script/DeployMerkleAirdrop.s.sol";
+import {ZkSyncChainChecker} from "lib/foundry-devops/src/ZkSyncChainChecker.sol"; // If using foundry-devops
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title MerkleAirdropTest
@@ -13,7 +16,7 @@ import {BagelToken} from "../src/BagelToken.sol";
  * @notice The ROOT of the tree is stored in the contract and users provide the PROOF to claim
  */
 
-contract MerkleAirdropTest is Test {
+contract MerkleAirdropTest is ZkSyncChainChecker, Test {
     MerkleAirdrop public airdrop;
     BagelToken public token;
 
@@ -29,22 +32,26 @@ contract MerkleAirdropTest is Test {
 
     /// setUp function
     function setUp() public {
-        /// DEPLOY THE ERC20 TOKEN
-        token = new BagelToken();
-        /// GENERATE A NEW USER
+        // Check if we are on a ZkSync chain
+        if (!isZkSyncChain()) {
+            // use deployScript
+            DeployMerkleAirdrop deployer = new DeployMerkleAirdrop();
+            (airdrop, token) = deployer.deployMerkleAirdrop();
+        } else {
+            // Manual deployment
+            token = new BagelToken();
+            airdrop = new MerkleAirdrop(ROOT, IERC20(address(token)));
+            /// MINT TOKENS TO THE OWNER
+            address owner = address(this);
+            /// ASSUMING ONLY 4 ADDRESS WILL BE GIVEN THE AIRDROP
+            AMOUNT_TO_SEND = AMOUNT_TO_CLAIM * 4;
+            token.mint(owner, AMOUNT_TO_SEND);
+            /// TRANSFER TOKENS TO THE AIRDROP CONTRACT
+            token.transfer(address(airdrop), AMOUNT_TO_SEND);
+            /// FLOW OF TOKENS : ERC20 TOKENS GENERATED -> SEND TO OWNER -> SEND TO AIRDROP CONTRACT -> SEND TO CLAIMANTS
+        }
         // (user, userPrivateKey) = makeAddrAndKey("testUser");
         user = 0x6CA6d1e2D5347Bfab1d91e883F1915560e09129D;
-        // console.log(user);
-        /// DEPLOY THE MERKLE AIRDROP CONTRACT
-        airdrop = new MerkleAirdrop(ROOT, token);
-        /// ASSUMING ONLY 4 ADDRESS WILL BE GIVEN THE AIRDROP
-        AMOUNT_TO_SEND = AMOUNT_TO_CLAIM * 4;
-        /// MINT TOKENS TO THE OWNER
-        address owner = address(this);
-        token.mint(owner, AMOUNT_TO_SEND);
-        /// TRANSFER TOKENS TO THE AIRDROP CONTRACT
-        token.transfer(address(airdrop), AMOUNT_TO_SEND);
-        /// FLOW OF TOKENS : ERC20 TOKENS GENERATED -> SEND TO OWNER -> SEND TO AIRDROP CONTRACT -> SEND TO CLAIMANTS
     }
 
     function test_UsersCanClaim() public {

@@ -187,3 +187,9 @@ Output json file generation flow:
 9. Generates the unique Merkle proof for each individual leaf.
 
 10. output.json Generation: All the generated data—original inputs, the proof for each leaf, the common Merkle root, and each leaf's hash—is written to script/target/output.json.
+
+To integrate the deployed contracts with the tests install `foundry-devops`
+
+```bash
+forge install cyfrin/foundry-devops
+```

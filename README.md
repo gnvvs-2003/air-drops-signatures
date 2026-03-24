@@ -193,3 +193,127 @@ To integrate the deployed contracts with the tests install `foundry-devops`
 ```bash
 forge install cyfrin/foundry-devops
 ```
+
+# Optimizing Merkle Airdrop claims : Authorization and Gas Fee Management
+Challanges in the current `MerkleAirdrop` `claim` function
+
+```solidity
+function claim(address account,uint256 amount,bytes[]32 calldata mekleProof) external{
+  if(sHasClaimed[account]) revert MerkleAirdrop__AlreadyClaimed();
+  bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(account,amount))));
+  if(!MerkleProof.verify(mekleProof,sRoot,leaf)) revert MerkleAirdrop__InvalidProof();
+  sHasClaimed[account] = true;
+  emit Claim(account,amount);
+  token.safeTransfer(account,amount);
+} 
+```
+
+The primary issue : Premission less regarding who can initiate a claim while this airdrop works and claiments receive tokens but there is no direct contact between the user and the airdrop contract.Instead there is a third person who initiated this airdrop.
+
+"This raises concerns: a user might receive an airdrop—and any associated tax liabilities or simply unwanted tokens—without having explicitly agreed to that particular claim event at that moment."
+
+# Simpler Approach : Recipient-Initiated Claims and its limitations
+It grants 2 things
+
+1. Direct Consent: Only the rightful owner of the address (the one controlling the private key for msg.sender) can initiate the claim for their tokens.
+
+2. Recipient Pays Gas: The account calling claim (i.e., msg.sender) would inherently be responsible for paying the transaction's gas fees.
+
+While this modification effectively addresses the consent problem, it introduces a new limitation. It removes the flexibility of allowing a third party to cover the gas fees for the claim. This can be a desirable feature in scenarios where a project wishes to sponsor gas costs for its users, or when a user prefers to delegate the transaction submission to a specialized service to manage gas
+
+# Advanced Solution : Enabling gasless claims with digital signatures
+
+This method allows an account to explicitly consent to receiving their airdrop while still permitting another party to submit the transaction and pay the associated gas fees.
+
+## Process flow
+![Signature Overflow](diagram-export-24-03-2026-16_21_38.png)
+
+# Etherium Signatures : EIP-191 and EIP-712
+
+Basic Signature verification
+# EIP-191
+![alt text](diagram-export-24-03-2026-18_33_59.png)
+
+Example Implementation of `EIP-191` version-`0x00`
+
+```solidity
+function getSigner(uint256 message,uint8 _v,bytes32 _r,bytes32 _s) public view returns(address){
+  bytes1 prefix = bytes1(0x19);
+  bytes1 eip191Version = bytes1(0x00);
+  address intendedValidatorAddr = address(this);
+  bytes32 applicationSpecificData = bytes32(message);
+  // EIP-191 formatted msg
+  bytes32 hashedMsg = keccak256(abi.encode(prefix,eip191Version,intendedValidatorAddr,applicationSpecificData));
+  // recover the signer
+  address signer = ecrecover(hashedMsg,_v,_r,_s);
+  return signer;
+}
+```
+
+While `EIP-191` standardizes the signing format and adds a layer of domain separation (e.g., with the validator address in version 0x00), version `0x00` itself doesn't inherently solve the problem of displaying complex `<data to sign>` in a human-readable way in wallets. This is where `EIP-712` comes into play.
+
+# EIP-712 : Typed Structured Data hashing and signing
+![alt text](diagram-export-24-03-2026-20_38_43.png)
+
+Example Implementatio of EIP-712
+
+1. Define your message
+
+```solidity
+struct Message{
+  uint256 number;
+}
+```
+
+2. Calculate the `typeHash`
+
+```solidity
+bytes32 public constant MESSAGE_TYPE_HASH = keccak256(bytes("Message(uint256 number)"));
+```
+
+3. Calculate the `hashStruct(msg)`
+
+```solidity
+/// Assuming `messageValue` is the uint256 value for the `number` 
+Message myMsg = Message({number : messageValue});
+bytes32 hashedMessagePayload = keccak256(abi.encode(MESSAGE_TYPE_HASH,myMsg));
+/// More generally, for a struct 'Mail { string from; string to; string contents; }'
+bytes32 MAIL_TYPEHASH = keccak256(bytes("Mail(string from,string to,string contents)"));
+bytes32 hashStructMail = keccak256(abi.encode(MAIL_TYPEHASH, mail.from, mail.to, mail.contents));
+```
+
+That will be `keccak256(abi.encode(MESSAGE_TYPEHASH,actual_value_of_number_field))`
+
+4. Calculating the `domainSeperator` : typically done once often in the contract constructor
+It involves hashing an instance of `EIP712Domain` struct
+
+```solidity
+// Pseudo-code for domain separator calculation
+EIP712DOMAIN_TYPEHASH = keccak256(bytes("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"));
+domainSeparator = keccak256(abi.encode(
+    EIP712DOMAIN_TYPEHASH,
+    "MyDAppName",
+    "1",
+    block.chainid, // or a specific chainId
+    address(this),
+    MY_SALT // some bytes32 salt
+));
+```
+
+5. Calculating the final digest
+```solidity
+bytes32 digest = keccak256(abi.encodePacked(
+    bytes1(0x19),
+    bytes1(0x01),
+    domainSeparator,
+    hashedMessagePayload 
+));
+```
+
+6. Recover the signer
+
+```solidity
+address signer = ecrecover(digest, _v, _r, _s);
+```
+
+In this project we are going to use Openzeppelin lib(`EIP712.sol`,`ECDSA.sol`) for implementing EIP-712

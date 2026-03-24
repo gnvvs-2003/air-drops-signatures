@@ -317,3 +317,6 @@ address signer = ecrecover(digest, _v, _r, _s);
 ```
 
 In this project we are going to use Openzeppelin lib(`EIP712.sol`,`ECDSA.sol`) for implementing EIP-712
+
+[Example Implementation](https://gist.github.com/gnvvs-2003/77d8d453e8edcbd36b70190037f72f09)
+

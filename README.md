@@ -320,3 +320,18 @@ In this project we are going to use Openzeppelin lib(`EIP712.sol`,`ECDSA.sol`) f
 
 [Example Implementation](https://gist.github.com/gnvvs-2003/77d8d453e8edcbd36b70190037f72f09)
 
+# Digital Signatures and v,r,s values 
+ECDSA : Elliptic Curve Digital Signature Algorithm and its characteristics v,r,s are fundamental components in the world of blockchain and web3 security
+
+ECDSA functionalities
+1. Generating Key pairs
+2. Creating Digital signatures
+3. Verifying Digital signatures
+
+Think of an ECDSA signature as a digital fingerprint – unique to each user and their specific message.
+
+This system of proof of ownership is achieved through public and private key pairs, which are the tools used to create these digital signatures. The entire process is underpinned by Public Key Cryptography (PKC), which uses asymmetric encryption (different keys for encrypting/signing and decrypting/verifying).
+
+![alt text](diagram-export-25-03-2026-22_13_34.png)
+
+# Generating Digital Identity:ECDSA Key pairs

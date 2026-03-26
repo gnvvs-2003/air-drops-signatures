@@ -377,3 +377,100 @@ Instead of just returning true/false, if the signature `(v, r, s)` is valid for 
 
 This is extremely useful for smart contracts, as it allows them to verify signatures on-chain and reliably retrieve the address of the account that signed a particular piece of data.
 
+# Transaction types
+1. Type-0 : `0x0` : Legacy transactions
+2. Type-1 : `0x1` : EIP-2930 transactions : type-0+ access list
+3. Type-2 : `0x2` : EIP-1559 transactions : type-1+ maxFeePerGas, maxPriorityFeePerGas
+
+The key change introduced by EIP-1559 was the replacement of the simple gasPrice (used in Type 0 and Type 1 transactions) with two new components:
+
+A baseFee: This fee is algorithmically determined per block based on network demand and is burned, reducing ETH supply.
+
+A maxPriorityFeePerGas: This is an optional tip paid directly to the validator (formerly miner) to incentivize transaction inclusion.
+
+Consequently, Type 2 transactions include new parameters:
+
+maxPriorityFeePerGas: The maximum tip the sender is willing to pay per unit of gas.
+
+maxFeePerGas: The absolute maximum total fee (baseFee + priorityFee) the sender is willing to pay per unit of gas.
+
+4. Type-3 : `0x3` : EIP-4844 transactions : type-2+ blob
+
+Key features of Type 3 transactions include:
+
+A separate fee market specifically for blob data, distinct from regular transaction gas fees.
+
+Additional fields on top of those found in Type 2 transactions:
+
+  1. max_fee_per_blob_gas: The maximum fee the sender is willing to pay per unit of gas for the blob data.
+
+  2. blob_versioned_hashes: A list of versioned hashes corresponding to the data blobs carried by the transaction.
+
+# ZkSync Specific Transaction types
+1. Type 113 : EIP-712 or 0x71
+2. Type 255 : Priority transactions or 0xff : Sending transactions from L1(Etherium) to L2(ZkSync) networks
+
+# Blob Transactions
+![alt text](diagram-export-26-03-2026-10_51_01.png)
+
+# Why Blob Transactions are needed : The Pre-Blob era
+![alt text](diagram-export-26-03-2026-11_32_56.png)
+
+# Working of EIP4844 : Working of Blobs
+![alt text](diagram-export-26-03-2026-12_00_02.png)
+
+## Blobs in Action
+1. Rollup prepares data
+The L2 rollup processes transactions, groups them together, and compresses them.
+2. Send to L1 with blobs
+It sends a special transaction (Type 3) to L1 that includes:
+Normal transaction details
+A commitment (hash) for each blob
+Proofs to verify those blobs
+A reference to the actual blob data (stored separately)
+3. L1 checks the data
+The smart contract on L1 reads the expected blob commitment
+It uses a verification function (`precompile`) to check the proof
+If valid → the data is confirmed correct and available
+4. Temporary storage
+The actual blob data is only stored for a short time
+After that, it’s deleted
+But the proof and record that it was valid stay forever on L1
+
+# Sending a blob transaction
+1. Setup
+Connect to an Ethereum node (RPC)
+Load your wallet (private key)
+Import libraries like Web3.py
+2. Prepare your data
+Take your data (e.g. <( o.o )>)
+Encode it into bytes (ABI encoding)
+
+Important rule:
+
+A blob must be exactly 128 KB
+If your data is smaller → pad it with zeros (\x00)
+
+👉 Think of it like filling a fixed-size box:
+
+Too small → add empty space
+Too big → not allowed
+3. Create the transaction
+
+  1. Normal fields (to, value, gas, etc.)
+  2. Special blob fields:
+  3. type: 3 → marks it as a blob transaction
+  4. maxFeePerBlobGas → what you’re willing to pay for blob storage
+4. Sign (this is where magic happens)
+
+When signing, you pass your blob data:
+
+  1. sign_transaction(tx, blobs=[your_blob])
+  2. The library automatically:
+  3. Creates commitments (KZG)
+  4. Generates proofs
+
+5. Send it
+Broadcast the signed transaction
+Wait for confirmation
+

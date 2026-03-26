@@ -489,13 +489,14 @@ After deploying
 
 ```bash
 == Return ==
-0: contract MerkleAirdrop 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-1: contract BagelToken 0x5FbDB2315678afecb367f032d93F642f64180aa3
+0: contract MerkleAirdrop 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707
+1: contract BagelToken 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+
 ```
 
 To obtain this message hash, you can use Foundry's cast call command to invoke getMessageHash on your deployed MerkleAirdrop contract. The command requires:
 
-1. The MerkleAirdrop contract address (0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512).
+1. The MerkleAirdrop contract address (0x5FC8d32690cc91D4c39d9d3abcBD16989F875707).
 
 2. The function signature: "getMessageHash(address,uint256)".
 
@@ -504,7 +505,11 @@ To obtain this message hash, you can use Foundry's cast call command to invoke g
 4. The RPC URL of your Anvil node.
 
 ```bash
-cast call 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 "getMessageHash(address,uint256)" 0x6CA6d1e2D5347Bfab1d91e883F1915560e09129D 25000000000000000000 --rpc-url $ANVIL_RPC_URL
+cast call 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 "getMessageHash(address,uint256)" 0x6CA6d1e2D5347Bfab1d91e883F1915560e09129D 25000000000000000000 --rpc-url $ANVIL_RPC_URL
+```
+
+```bash
+0xb387690e96f321204d7d743aec7cf68587afba07f9f086c043f9a3224a739a83
 ```
 
 # Signing the hashed message
@@ -514,4 +519,22 @@ This signature serves as cryptographic proof that the owner of the private key a
 cast wallet sign --no-hash <message_hash> --private-key $ANVIL_PRIVATE_KEY 
 ```
 
+```bash
+0xbc4b0a35309255b611eb1544724cbf2eb0914bc323599e7e0602dc2dbf7d33ad5c28be5aa4c31fd8f56ec317bb848d1a5060fdafdd90844d5d7c3ac958a618431b
+```
+
 This command will output the digital signature as a hexadecimal string
+
+# Deconstucting the Signature : v,r,s
+r : first 32 bytes of signature
+s : next 32 bytes of signature
+v : final 1 byte of signature (recovery identifier)
+
+# Validating the airdrop
+```bash
+ubuntu@L2003:~/airdrop-and-signatures$ cast call 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 "getAirdropToken()(address)" --rpc-url http://localhost:8545
+0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+ubuntu@L2003:~/airdrop-and-signatures$ cast call 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 "balanceOf(address)(uint256)" 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --rpc-url h
+ttp://localhost:8545
+25000000000000000000 [2.5e19]
+```

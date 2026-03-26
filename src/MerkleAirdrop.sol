@@ -143,7 +143,7 @@ contract MerkleAirdrop is EIP712 {
         pure
         returns (bool)
     {
-        address actualSigner = ECDSA.recover(digest, v, r, s);
+        (address actualSigner,,) = ECDSA.tryRecover(digest, v, r, s);
         return actualSigner != address(0) && actualSigner == expectedSigner;
     }
 

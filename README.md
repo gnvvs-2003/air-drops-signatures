@@ -482,3 +482,36 @@ Signature components
 
 1. r and s : op of signing algo
 2. v : recovery identifier used to recover the public key of the signer from the signature and the msg hash
+
+# Generating the message hash which has to be signed
+
+After deploying 
+
+```bash
+== Return ==
+0: contract MerkleAirdrop 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+1: contract BagelToken 0x5FbDB2315678afecb367f032d93F642f64180aa3
+```
+
+To obtain this message hash, you can use Foundry's cast call command to invoke getMessageHash on your deployed MerkleAirdrop contract. The command requires:
+
+1. The MerkleAirdrop contract address (0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512).
+
+2. The function signature: "getMessageHash(address,uint256)".
+
+3. The arguments for the function: the claimant's address (0x6CA6d1e2D5347Bfab1d91e883F1915560e09129D) and the claimable amount (in wei) (25000000000000000000).
+
+4. The RPC URL of your Anvil node.
+
+```bash
+cast call 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 "getMessageHash(address,uint256)" 0x6CA6d1e2D5347Bfab1d91e883F1915560e09129D 25000000000000000000 --rpc-url $ANVIL_RPC_URL
+```
+
+# Signing the hashed message
+This signature serves as cryptographic proof that the owner of the private key authorizes the action associated with the message hash (in this case, claiming tokens). Foundry's cast wallet sign command facilitates this.
+
+```bash
+cast wallet sign --no-hash <message_hash> --private-key $ANVIL_PRIVATE_KEY 
+```
+
+This command will output the digital signature as a hexadecimal string

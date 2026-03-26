@@ -474,3 +474,11 @@ When signing, you pass your blob data:
 Broadcast the signed transaction
 Wait for confirmation
 
+# Final Overview of Singatures
+
+Digital signature : A digital signature cryptographically proves that a msg is approved by the owner of the specific private key
+
+Signature components 
+
+1. r and s : op of signing algo
+2. v : recovery identifier used to recover the public key of the signer from the signature and the msg hash
